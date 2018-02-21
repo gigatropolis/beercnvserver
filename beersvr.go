@@ -14,7 +14,7 @@ import (
 	//"strconv"
 	//"time"
 	//"../xml/beerxml"
-	"./xml/beerxml2"
+	"github.com/gigatropolis/beercnv"
 )
 
 // --------------------------------------------------------------------
@@ -79,9 +79,9 @@ func ConvertBeerXML1File(w http.ResponseWriter, r *http.Request) {
 
 		data.StrConvert = "File uploaded successfully: " + header.Filename
 
-		beer2 := beerxml2.BeerXml2{}
+		beer2 := beercnv.BeerXml2{}
 
-		err = beerxml2.AddFromBeerXMLFile(&beer2, filename)
+		err = beercnv.AddFromBeerXMLFile(&beer2, filename)
 
 		if err != nil {
 			fmt.Fprintf(w, "error: %v\n", err)
