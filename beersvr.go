@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	//"io/ioutil"
+	"io/ioutil"
 	"net/http"
 	//"net/url"
 	"os"
@@ -41,7 +41,41 @@ func (h *BeerServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "URL Not Found: %s", r.URL.String())
 }
 
-func ConvertBeerXML1File(w http.ResponseWriter, r *http.Request) {
+func convertxml1to2(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "POST" {
+		r.ParseForm()
+
+		body, err := ioutil.ReadAll(r.Body)
+		//defer resp.Body.Close()
+
+		if err != nil {
+			fmt.Fprintf(w, "Unable to Read post body")
+			return
+		}
+
+		fmt.Printf("body: %s\n", body)
+
+		beer2 := beercnv.BeerXml2{}
+		err = beercnv.ConvertXML1to2(r.Body, &beer2)
+
+		if err != nil {
+			fmt.Fprintf(w, "error: %v\n", err)
+			return
+		}
+
+		output, err := xml.MarshalIndent(beer2, "  ", "   ")
+
+		if err != nil {
+			fmt.Fprintf(w, "error: %v\n", err)
+			return
+		}
+
+		fmt.Fprintf(w, string(output))
+
+	}
+}
+
+func convertxml1to2file(w http.ResponseWriter, r *http.Request) {
 
 	data := ConvData{StrConvert: "Upload BeerXML 1.0 file to be converted to BeerXML 2.x format"}
 
@@ -71,17 +105,20 @@ func ConvertBeerXML1File(w http.ResponseWriter, r *http.Request) {
 		defer out.Close()
 
 		// write the content from POST to the file
+
 		_, err = io.Copy(out, file)
 		if err != nil {
 			fmt.Fprintln(w, err)
 			return
 		}
 
+		file.Seek(0, 0)
+
 		data.StrConvert = "File uploaded successfully: " + header.Filename
 
 		beer2 := beercnv.BeerXml2{}
 
-		err = beercnv.AddFromBeerXMLFile(&beer2, filename)
+		err = beercnv.ConvertXML1to2(file, &beer2)
 
 		if err != nil {
 			fmt.Fprintf(w, "error: %v\n", err)
@@ -125,8 +162,9 @@ func main() {
 	}
 
 	mux = make(map[string]func(http.ResponseWriter, *http.Request))
-	mux["/"] = ConvertBeerXML1File
-	mux["/ConvertBeerXML1File"] = ConvertBeerXML1File
+	mux["/"] = convertxml1to2file
+	mux["/convertxml1to2file"] = convertxml1to2file
+	mux["/convertxml1to2"] = convertxml1to2
 
 	server.ListenAndServe()
 
