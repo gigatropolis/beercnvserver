@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io"
-	"io/ioutil"
+	//"io/ioutil"
 	"net/http"
 	//"net/url"
 	"os"
@@ -44,19 +44,21 @@ func (h *BeerServerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func convertxml1to2(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "POST" {
 		r.ParseForm()
+		/*
+			body, err := ioutil.ReadAll(r.Body)
+			defer resp.Body.Close()
 
-		body, err := ioutil.ReadAll(r.Body)
-		//defer resp.Body.Close()
+			if err != nil {
+				fmt.Fprintf(w, "Unable to Read post body")
+				return
+			}
 
-		if err != nil {
-			fmt.Fprintf(w, "Unable to Read post body")
-			return
-		}
-
-		fmt.Printf("body: %s\n", body)
+			fmt.Printf("body: %s\n", body)
+		*/
 
 		beer2 := beercnv.BeerXml2{}
-		err = beercnv.ConvertXML1to2(r.Body, &beer2)
+
+		err := beercnv.ConvertXML1to2(r.Body, &beer2)
 
 		if err != nil {
 			fmt.Fprintf(w, "error: %v\n", err)
